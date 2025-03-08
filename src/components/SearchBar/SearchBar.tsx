@@ -1,18 +1,23 @@
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import s from './SearchBar.module.css';
 import { BsSearch } from "react-icons/bs";
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
 
-const SearchBar = ({ onSubmit, onLoad }) => {
+type Props = {
+  onSubmit: (newQuery: string) => void;
+  onLoad: boolean;
+};
+
+const SearchBar = ({ onSubmit, onLoad }: Props) => {
   const [searchValue, setSearchValue] = useState('');
   
-  const handleSubmit = (evt) => {
+  const handleSubmit = (evt: FormEvent) => {
     evt.preventDefault();
     if (searchValue.trim() === '') {
-     return toast.error("Please enter a request")
+      return toast.error('Please enter a request');
     }
-    onSubmit(searchValue);
-   evt.target.reset();
+    onSubmit(searchValue.toLowerCase().trim());
+    setSearchValue('');
   };
 
 

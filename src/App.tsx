@@ -9,29 +9,33 @@ import ErrorMessage from './components/ErrorMessage/ErrorMessage'
 import toast from 'react-hot-toast';
 import { fetchImages } from './services/api';
 
+  type Response = {
+    total_pages: number;
+    results: Data[];
+  };
+
 function App() {
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState<Data[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState('');
   const [totalPages, setTotalPages] = useState(0);
   const [modalIsOpen, setIsOpen] = useState(false);
-  const [item, setItem] = useState('')
-
+  const [item, setItem] = useState<Data | null>(null);
 
   useEffect(() => {
     if (query) {
-      const getImages = async (searchParam, searchPage) => {
+      const getImages = async (searchParam: string, searchPage: number) => {
         try {
           setLoading(true);
           setError(false);
-          const { total_pages, results } = await fetchImages(searchParam, searchPage);
+          const { total_pages, results }: Response = await fetchImages(searchParam, searchPage);
           if (!results.length) {
             return toast.error('No images found for your request');
           }
           setTotalPages(total_pages);
-          setImages((prev) => [...prev, ...results])
+          setImages((prev: Data[]) => [...prev, ...results])
         } catch (error) {
          setError(true);
       } finally {
@@ -42,18 +46,21 @@ function App() {
     }
   }, [query, page])
 
-  const onSubmit = (newQuery) => {
+  
+  const onSubmit = (newQuery: string) => {
     setQuery(newQuery);
-    setImages([]);
+    if (query !== newQuery) {
+      setImages([]);
+    }
     setPage(1);
   };
 
   
-  const openModal = (evt) => {
+  const openModal = (item: Data) => {
     setIsOpen(true);
-    setItem(images.filter(image => image.urls.small === evt.target.src));
+    setItem(item);
   }
- 
+
 
   return (
     <>
@@ -62,7 +69,7 @@ function App() {
       {loading && <Loader />}
       {error && <ErrorMessage />}
       {!error && images.length > 0 && totalPages > page && <LoadMoreBtn onClick={() => setPage(prev => prev + 1)} />}
-      <ImageModal onOpen={modalIsOpen} closeModal={() => setIsOpen(false)} data={images} item={item} />
+      {item !==null && <ImageModal onOpen={modalIsOpen} closeModal={() => setIsOpen(false)} item={item} />}
     </>
   )
 }
